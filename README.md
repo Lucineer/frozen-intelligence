@@ -33,7 +33,7 @@ python3 cli.py estimate --model 3b --process 28nm --yield_pct 85
 - **NoC mesh**: XY routing with virtual channels and wormhole switching
 - **DDR4/LPDDR4**: Bank-interleaved memory controller with refresh management
 
-## Modules (28 Python files, stdlib only)
+## Modules (31 source + CLI + tests, stdlib only)
 
 ### Core Toolchain
 1. `metal_compiler.py` — Weight quantization → binary METL format → die size
@@ -68,18 +68,29 @@ python3 cli.py estimate --model 3b --process 28nm --yield_pct 85
 20. `power_estimator.py` — Dynamic + leakage power, per-vessel, process node comparison
 21. `signal_integrity.py` — Eye diagrams, crosstalk, termination, transmission line modeling
 
+### Synthesis
+20. `synth_estimator.py` — Cell library area/power estimation, multiplier, systolic, full-chip
+
 ### On-Chip Infrastructure
-22. `memory_controller.py` — DDR4/LPDDR4: command scheduling, bank interleaving, refresh
-23. `noc_router.py` — Mesh NoC: XY routing, virtual channels, wormhole switching
+21. `memory_controller.py` — DDR4/LPDDR4: command scheduling, bank interleaving, refresh
+22. `noc_router.py` — Mesh NoC: XY routing, virtual channels, wormhole switching
 
 ### Integration & Security
-24. `equipment_detector.py` — USB vessel scanning, character sheet generation
-25. `a2a_handler.py` — A2A protocol, DID identity, fleet bus integration
-26. `hardware_security.py` — TRNG, AES-256 CTR, secure boot chain, PUF chip authentication
+23. `equipment_detector.py` — USB vessel scanning, character sheet generation
+24. `a2a_handler.py` — A2A protocol, DID identity, fleet bus integration
+25. `hardware_security.py` — TRNG, AES-256 CTR, secure boot chain, PUF chip authentication
+
+### Verification
+24. `formal_checker.py` — Bounded model checking: safety, liveness, invariants, counterexamples
+25. `rtl_simulator.py` — Event-driven RTL sim: AND/OR/XOR/MUX/FA/DFF, trace, multi-cycle
+
+### Cost & Debug
+26. `cost_model.py` — NRE, unit cost, yield, packaging, volume/process comparison
+27. `jtag_debug.py` — JTAG TAP controller, DAP debug access, boundary scan
 
 ### SDK & CLI
-27. `sdk.py` — Host-side USB transport, streaming generation, fleet mode
-28. `cli.py` — Unified CLI: `compile`, `verify`, `estimate`, `simulate`, `benchmark`
+28. `sdk.py` — Host-side USB transport, streaming generation, fleet mode
+29. `cli.py` — Unified CLI: `compile`, `verify`, `estimate`, `simulate`, `benchmark`
 
 ## Swarm Tiling
 
