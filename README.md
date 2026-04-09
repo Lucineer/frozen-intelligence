@@ -30,8 +30,10 @@ python3 cli.py estimate --model 3b --process 28nm --yield_pct 85
 - **Zero boot time**: Powers on and immediately processes tokens
 - **Mixed precision**: LayerNorm=FP32, Embed=INT8, Attention/FFN=INT4
 - **Hardware security**: TRNG, AES-256, secure boot, PUF authentication
+- **NoC mesh**: XY routing with virtual channels and wormhole switching
+- **DDR4/LPDDR4**: Bank-interleaved memory controller with refresh management
 
-## Modules (19 Python files, stdlib only)
+## Modules (28 Python files, stdlib only)
 
 ### Core Toolchain
 1. `metal_compiler.py` — Weight quantization → binary METL format → die size
@@ -43,28 +45,41 @@ python3 cli.py estimate --model 3b --process 28nm --yield_pct 85
 ### Physical Design
 6. `gdsii_generator.py` — GDSII stream format: weight tiles, pad rings, die assembly
 7. `drc_checker.py` — Design Rule Checker: width, spacing, enclosure, density (28nm LP)
-8. `fpga_toolkit.py` — TLMM encoding, COE generation, Hilbert curve weight layout
+8. `floorplanner.py` — Chip floorplan: weight banks, I/O pads, power grid, clock tree, thermal
+9. `fpga_toolkit.py` — TLMM encoding, COE generation, Hilbert curve weight layout
 
 ### FPGA Prototyping
-9. `tlmm_engine.py` — Table-Lookup MatMul (arXiv:2510.15926), 4×4 to 64×64 arrays
-10. `weight_streamer.py` — DDR4 → BRAM streaming controller with pipeline
-11. `clock_gating.py` — Hierarchical clock gating, DVFS, thermal throttling
-12. `pcie_interface.py` — PCIe config space, BAR mapping, MMIO, DMA simulation
+10. `tlmm_engine.py` — Table-Lookup MatMul (arXiv:2510.15926), 4×4 to 64×64 arrays
+11. `weight_streamer.py` — DDR4 → BRAM streaming controller with pipeline
+12. `clock_gating.py` — Hierarchical clock gating, DVFS, thermal throttling
+13. `pcie_interface.py` — PCIe config space, BAR mapping, MMIO, DMA simulation
 
 ### Swarm Architecture
-13. `swarm_tiler.py` — Yield-aware MoE tiling, die grading (GOLD/SILVER/BRONZE/SCRAP), Monte Carlo, Verilog generation
+14. `swarm_tiler.py` — Yield-aware MoE tiling, die grading (GOLD/SILVER/BRONZE/SCRAP), Monte Carlo
+
+### Digital Design
+15. `netlist_gen.py` — Structural Verilog netlist: MAC, multiplier, weight bank, top-level
+16. `testbench_gen.py` — Verilog testbench: stimulus, reset, scoreboard, response checking
+17. `layer_simulator.py` — NN layer simulation with mixed precision and per-vessel throughput
 
 ### Analysis
-14. `quant_research.py` — Precision sweep, mixed-precision analysis, optimal bits per layer
+18. `quant_research.py` — Precision sweep, mixed-precision analysis, optimal bits per layer
+19. `timing_analyzer.py` — STA: MAC critical path, systolic arrays, PVT corner analysis
+20. `power_estimator.py` — Dynamic + leakage power, per-vessel, process node comparison
+21. `signal_integrity.py` — Eye diagrams, crosstalk, termination, transmission line modeling
 
-### Integration
-15. `equipment_detector.py` — USB vessel scanning, character sheet generation
-16. `a2a_handler.py` — A2A protocol, DID identity, fleet bus integration
-17. `hardware_security.py` — TRNG, AES-256 CTR, secure boot chain, PUF chip authentication
+### On-Chip Infrastructure
+22. `memory_controller.py` — DDR4/LPDDR4: command scheduling, bank interleaving, refresh
+23. `noc_router.py` — Mesh NoC: XY routing, virtual channels, wormhole switching
+
+### Integration & Security
+24. `equipment_detector.py` — USB vessel scanning, character sheet generation
+25. `a2a_handler.py` — A2A protocol, DID identity, fleet bus integration
+26. `hardware_security.py` — TRNG, AES-256 CTR, secure boot chain, PUF chip authentication
 
 ### SDK & CLI
-18. `sdk.py` — Host-side USB transport, streaming generation, fleet mode
-19. `cli.py` — Unified CLI: `compile`, `verify`, `estimate`, `simulate`, `benchmark`
+27. `sdk.py` — Host-side USB transport, streaming generation, fleet mode
+28. `cli.py` — Unified CLI: `compile`, `verify`, `estimate`, `simulate`, `benchmark`
 
 ## Swarm Tiling
 
