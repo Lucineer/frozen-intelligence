@@ -1,62 +1,109 @@
 # frozen-intelligence
 
-> The chip IS the agent. No CPU, no OS, no software stack — neural network weights are hardwired into silicon interconnect, creating a self-contained inference vessel.
+Mask-locked inference chip design toolchain. The chip IS the agent.
 
 ## Vessel Classes
 
-| Class | Params | Clock | Power | Tokens/s | Process |
-|-------|--------|-------|-------|----------|---------|
-| Scout | 1B | 500MHz | 1W | 100 | 28nm |
-| Messenger | 3B | 500MHz | 3W | 80 | 28nm |
-| Navigator | 7B | 500MHz | 6W | 50 | 28nm |
-| Captain | 13B | 500MHz | 12W | 30 | 28nm |
+| Class | Parameters | Power | Tokens/s | Use Case |
+|-------|-----------|-------|----------|----------|
+| Scout | 1B | <1W | 100 | Edge sensors, microcontrollers |
+| Messenger | 3B | 2.5W | 80 | Voice assistants, smart devices |
+| Navigator | 7B | 5W | 50 | Field operations, autonomous systems |
+| Captain | 13B | 10W | 30 | On-premise reasoning, data center edge |
 
 ## Architecture
 
-- **Weight-to-metal**: Quantized weights encoded directly as metal interconnect geometry
-- **Zero runtime**: No CPU, no memory fetch, no software — the silicon IS the model
-- **Mixed precision**: LayerNorm=FP32, Embeddings=INT8, Attention+FFN=INT4
-- **Systolic arrays**: Dataflow architecture with pipelined MAC units
-- **Thermal management**: Hardware-only DVFS with temperature sensors
+- **Weight-locked**: Model weights hardwired into metal interconnect
+- **Zero boot time**: Powers on and immediately processes tokens
+- **Deterministic latency**: Fixed throughput independent of input
+- **Mixed precision**: LayerNorm=FP32, Embed=INT8, Attention/FFN=INT4
+- **TLMM**: Table-Lookup MatMul (90% LUT reduction vs traditional MAC)
+- **Yield-aware**: MoE swarm tiling with defect tolerance and die binning
 
-## Python Modules
+## Modules (15 Python files, stdlib only)
 
-- `metal_compiler.py (weight quantization + binary chip encoding)`
-- `inference_engine.py (chip simulation, thermal throttling, fleet routing)`
-- `equipment_detector.py (USB vessel scanning + character sheet)`
-- `a2a_handler.py (A2A protocol, DID identity, fleet bus)`
-- `verilog_generator.py (MAC unit, systolic arrays, chip top, testbench, floorplan)`
-- `chip_verifier.py (timing analysis, power checks, design rules, test patterns)`
-- `quant_research.py (precision sweep, mixed-precision analysis, optimal bits)`
-- `weight_compiler.py (full weight-to-metal compilation pipeline)`
+### Core Toolchain
+- `metal_compiler.py` — Weight quantization → binary METL format → die size estimation
+- `weight_compiler.py` — Full weight-to-metal pipeline (PyTorch → mixed-precision → binary)
+- `inference_engine.py` — Chip simulation, thermal management, fleet routing
+- `verilog_generator.py` — MAC units, systolic arrays, chip top module, testbench
+- `chip_verifier.py` — Timing/power/Design Rule Check, test pattern generation
 
-## Research
+### FPGA Prototyping
+- `fpga_toolkit.py` — TLMM encoding, COE generation, Hilbert curve weight layout
+- `tlmm_engine.py` — Table-Lookup MatMul (arXiv:2510.15926), 4×4 to 64×64 arrays
+- `weight_streamer.py` — DDR4 → BRAM streaming controller with pipeline optimization
+- `clock_gating.py` — Hierarchical clock gating, DVFS, thermal throttling
 
-- Weight-to-metal compilation pipeline
-- Manufacturing playbook (MPW → production)
-- Software SDK design (USB driver, streaming protocol)
-- Competitive analysis vs NVIDIA/Hailo/Groq
-- Technical risk assessment
+### Swarm Architecture
+- `swarm_tiler.py` — Yield-aware MoE tiling, defect simulation, die grading (GOLD/SILVER/BRONZE/SCRAP), Monte Carlo yield analysis, Verilog generation, C driver header generation
+
+### Analysis
+- `quant_research.py` — Precision sweep, mixed-precision analysis, optimal bits per layer
+- `equipment_detector.py` — USB vessel scanning, character sheet generation
+- `a2a_handler.py` — A2A protocol, DID identity, fleet bus integration
+
+### SDK & CLI
+- `sdk.py` — Host-side USB transport, streaming generation, fleet mode
+- `cli.py` — Unified CLI: `compile`, `verify`, `estimate`, `simulate`, `benchmark`
 
 ## Quick Start
 
 ```bash
-# Generate Verilog for a chip
-python3 src/verilog_generator.py
+cd frozen-intelligence
+export PYTHONPATH=src:.
 
-# Compile weights to mask format
-python3 src/weight_compiler.py
+# Run any module demo
+python src/tlmm_engine.py
+python src/swarm_tiler.py
 
-# Verify chip meets timing/power
-python3 src/chip_verifier.py
-
-# Estimate quantization quality
-python3 src/quant_research.py
-
-# Plan tapeout costs
-python3 src/tapeout_planner.py  # in mask-locked-inference-chip repo
+# CLI usage
+python cli.py compile --model qwen3.5-3b --precision int4 --output chip.bin
+python cli.py verify --chip messenger --clock 500 --power 3.0
+python cli.py estimate --model 3b --process 28nm --yield_pct 85
+python cli.py simulate --model messenger --prompt "Hello" --tokens 64
+python cli.py benchmark --iterations 10
 ```
+
+## Swarm Tiling
+
+The swarm architecture tiles multiple specialized models onto a single die:
+
+```
+    ┌─────────────────────────┐
+    │  EDGE: expendable       │
+    │  ┌───────────────────┐  │
+    │  │  MID: important   │  │
+    │  │  ┌─────────────┐  │  │
+    │  │  │  CORE:      │  │  │
+    │  │  │  Router     │  │  │
+    │  │  │  Safety     │  │  │
+    │  │  │  Primary    │  │  │
+    │  │  └─────────────┘  │  │
+    │  └───────────────────┘  │
+    └─────────────────────────┘
+```
+
+Defective tiles are disabled. MoE router skips dead tiles. Each die is binned:
+- **GOLD**: Full swarm → flagship price
+- **SILVER**: Core + most experts → standard price
+- **BRONZE**: Core only → budget SKU
+- **SCRAP**: Non-functional
+
+## Zero Dependencies
+
+All modules use Python stdlib only. No PyTorch, no TensorFlow, no external packages.
+Runs on Jetson ARM64, Raspberry Pi, or any Python 3.11+ environment.
+
+## Research
+
+See `docs/research/` for 5 DeepSeek RA rounds (~80K chars):
+- Weight-to-metal compilation
+- Manufacturing process
+- Software SDK design
+- Competitive analysis
+- Technical risks
 
 ## License
 
-MIT — Lucineer / SuperInstance / DiGennaro et al.
+MIT — Lucineer (DiGennaro et al.)
